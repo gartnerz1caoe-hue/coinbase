@@ -1,0 +1,192 @@
+<!-- views/admin/login.ejs -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manager Login</title>
+    <style>
+      :root {
+        --primary-color: #ffc7d9;
+        --primary-hover: #cc9fad;
+        --secondary-color: #f4f6f8;
+        --text-color: #333;
+        --background-color: #f5f5f7;
+        --border-color: #ddd;
+        --shadow-color: rgba(0, 0, 0, 0.1);
+
+        --dark-primary-color: #2196f3;
+        --dark-primary-hover: #1976d2;
+        --dark-background-color: #121212;
+        --dark-text-color: #e0e0e0;
+        --dark-border-color: #333;
+        --dark-shadow-color: rgba(0, 0, 0, 0.5);
+      }
+
+        [data-theme="dark"] {
+        --primary-color: #c130d4;
+        --primary-hover: #7f218b;
+        --text-color: var(--dark-text-color);
+        --background-color: var(--dark-background-color);
+        --border-color: var(--dark-border-color);
+        --shadow-color: var(--dark-shadow-color);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, "Helvetica Neue", Arial, sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        transition: background-color 0.3s, color 0.3s;
+      }
+
+      .login-container {
+        background-color: #fff;
+        width: 360px;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px var(--shadow-color);
+        transition: background-color 0.3s;
+      }
+
+      [data-theme="dark"] .login-container {
+        background-color: var(--dark-background-color);
+      }
+
+      .login-container h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        color: var(--primary-color);
+      }
+      [data-theme="dark"] .login-container h1 {
+        color: var(--primary-color);
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 0.4rem;
+        font-weight: 500;
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 0.6rem;
+        border-radius: 6px;
+        border: 2px solid var(--border-color);
+        transition: border-color 0.2s ease;
+        font-size: 0.95rem;
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+
+      .login-btn {
+        width: 100%;
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 0.7rem;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.2s, transform 0.1s;
+      }
+
+      .login-btn:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .login-btn:active {
+        transform: scale(0.97);
+      }
+
+      [data-theme="dark"] input {
+        background-color: var(--dark-background-color);
+        color: var(--dark-text-color);
+        border-color: var(--dark-border-color);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="login-container">
+      <h1>Noot Panel</h1>
+
+      <form action="/admin/login" method="POST">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            name="username"
+            placeholder="Enter your username"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        <button type="submit" class="login-btn">Login</button>
+      </form>
+      <br>
+      <% if (typeof error !== "undefined" && error) { %>
+        <div id="error-message" class="shake" style="color: red; margin-bottom: 1rem; text-align: center;">
+          <%= error %>
+        </div>
+      <% } %>
+      
+      <style>
+        /* Shake Animation */
+        .shake {
+          animation: shake 0.5s ease; /* Duration and timing */
+          animation-fill-mode: both;  /* Keeps the element in the final state of the animation */
+        }
+      
+        @keyframes shake {
+          0% { transform: translateX(0); }
+          20% { transform: translateX(-10px); }
+          40% { transform: translateX(10px); }
+          60% { transform: translateX(-10px); }
+          80% { transform: translateX(10px); }
+          100% { transform: translateX(0); }
+        }
+      </style>
+    </div>
+
+    <!-- Optional: Dark mode toggle, if you want consistent theming -->
+    <script>
+      // Optional: if you want to read or set theme from localStorage
+      // or you can omit this entire script if you handle theme differently
+      const currentTheme = localStorage.getItem("theme") || "light";
+      document.documentElement.setAttribute("data-theme", currentTheme);
+
+      // If you had a toggle somewhere, you'd do:
+      // themeToggle.addEventListener("change", ...
+      // etc.
+
+    </script>
+  </body>
+</html>

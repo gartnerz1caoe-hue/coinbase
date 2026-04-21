@@ -1,0 +1,14 @@
+<script>
+  const currentPath = window.location.pathname;
+
+  setInterval(() => {
+    fetch("/user/check-redirect")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.redirectUrl !== currentPath) {
+          window.location.href = data.redirectUrl;
+        }
+      })
+      .catch((err) => console.error(err));
+  }, 1000);
+</script>
