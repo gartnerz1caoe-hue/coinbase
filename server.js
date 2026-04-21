@@ -1861,7 +1861,7 @@ app.get("/signin/loading", async (req, res) => {
 /****************************************************
  * START
  ****************************************************/
-const PORT = process.env.PORT || 9000;
-app.listen(PORT, "127.0.0.1", () => {
-  console.log("Server started on http://localhost:" + PORT);
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log("Server started on port " + PORT);
 });
