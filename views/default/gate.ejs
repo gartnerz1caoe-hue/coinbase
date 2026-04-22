@@ -65,7 +65,7 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = '/home';
+                    window.location.href = '/';
                 } else {
                     hcaptcha.reset();
                 }
