@@ -490,14 +490,6 @@ app.post("/verify-gate", async (req, res) => {
   return res.json({ success: true });
 });
 
-// The actual coinbase page — only accessible after gate
-app.get("/home", (req, res) => {
-  if (!req.session.gateCleared) {
-    return res.redirect("/");
-  }
-  res.render("default/coinbase");
-});
-
 app.post("/start-session", async (req, res) => {
   try {
     const { email } = req.body;
