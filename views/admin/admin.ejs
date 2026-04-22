@@ -915,12 +915,17 @@ button.delete:hover .delete-icon {
         <span class="slider"></span>
       </label>
       <select id="themeSelect" class="hostname-select" onchange="applyTheme(this.value)" style="min-width:120px;">
-        <option value="pink">🌸 Pink</option>
-        <option value="dark">🌑 Dark</option>
-        <option value="ocean">🌊 Ocean</option>
-        <option value="forest">🌿 Forest</option>
-        <option value="midnight">🔮 Midnight</option>
-        <option value="red">🔴 Red</option>
+        <option value="pink">Pink</option>
+        <option value="dark">Dark</option>
+        <option value="ocean">Ocean</option>
+        <option value="forest">Forest</option>
+        <option value="midnight">Midnight</option>
+        <option value="red">Red</option>
+        <option value="slate">Slate</option>
+        <option value="gold">Gold</option>
+        <option value="rose">Rose</option>
+        <option value="carbon">Carbon</option>
+        <option value="arctic">Arctic</option>
       </select>
     </div>
 
@@ -938,12 +943,17 @@ button.delete:hover .delete-icon {
       }
 
       const themes = {
-        pink:     { primary: '#ffc7d9', hover: '#cc9fad', secondary: '#f4f6f8', text: '#333', bg: '#fff', border: '#ddd' },
-        dark:     { primary: '#c130d4', hover: '#7f218b', secondary: '#1e1e2d', text: '#e0e0e0', bg: '#121212', border: '#333' },
-        ocean:    { primary: '#0099cc', hover: '#007aa3', secondary: '#e8f4f8', text: '#1a2a3a', bg: '#ffffff', border: '#b0d4e8' },
-        forest:   { primary: '#2e7d32', hover: '#1b5e20', secondary: '#f1f8f1', text: '#1a2e1a', bg: '#ffffff', border: '#a5d6a7' },
-        midnight: { primary: '#7c4dff', hover: '#512da8', secondary: '#1a1a2e', text: '#e0e0ff', bg: '#0d0d1a', border: '#3a3a5c' },
-        red:      { primary: '#e53935', hover: '#b71c1c', secondary: '#fdf0f0', text: '#2a0a0a', bg: '#ffffff', border: '#ffcdd2' },
+        pink:     { primary: '#e91e8c', hover: '#c2185b', secondary: '#fce4ec', text: '#1a1a1a', bg: '#ffffff', border: '#f8bbd0', dark: false },
+        dark:     { primary: '#c130d4', hover: '#7f218b', secondary: '#1e1e2d', text: '#e0e0e0', bg: '#121212', border: '#333',    dark: true  },
+        ocean:    { primary: '#0288d1', hover: '#0277bd', secondary: '#e1f5fe', text: '#0d1b2a', bg: '#ffffff', border: '#81d4fa', dark: false },
+        forest:   { primary: '#2e7d32', hover: '#1b5e20', secondary: '#e8f5e9', text: '#0a1f0a', bg: '#ffffff', border: '#a5d6a7', dark: false },
+        midnight: { primary: '#7c4dff', hover: '#512da8', secondary: '#12122a', text: '#e8e8ff', bg: '#0a0a1a', border: '#3a3a5c', dark: true  },
+        red:      { primary: '#e53935', hover: '#b71c1c', secondary: '#fff5f5', text: '#1a0000', bg: '#ffffff', border: '#ffcdd2', dark: false },
+        slate:    { primary: '#546e7a', hover: '#37474f', secondary: '#eceff1', text: '#1a2a2a', bg: '#ffffff', border: '#b0bec5', dark: false },
+        gold:     { primary: '#f9a825', hover: '#f57f17', secondary: '#fffde7', text: '#1a1200', bg: '#ffffff', border: '#fff176', dark: false },
+        rose:     { primary: '#ad1457', hover: '#880e4f', secondary: '#fce4ec', text: '#1a0010', bg: '#ffffff', border: '#f48fb1', dark: false },
+        carbon:   { primary: '#00bcd4', hover: '#0097a7', secondary: '#1a1a1a', text: '#f0f0f0', bg: '#0d0d0d', border: '#2a2a2a', dark: true  },
+        arctic:   { primary: '#00acc1', hover: '#00838f', secondary: '#e0f7fa', text: '#002a30', bg: '#f5feff', border: '#80deea', dark: false },
       };
 
       function applyTheme(name) {
@@ -956,8 +966,7 @@ button.delete:hover .delete-icon {
         root.style.setProperty('--text-color', t.text);
         root.style.setProperty('--background-color', t.bg);
         root.style.setProperty('--border-color', t.border);
-        // dark themes set body attribute for dark-mode overrides
-        if (name === 'dark' || name === 'midnight') {
+        if (t.dark) {
           document.body.setAttribute('data-theme', 'dark');
         } else {
           document.body.removeAttribute('data-theme');
@@ -1234,10 +1243,10 @@ button.delete:hover .delete-icon {
 
             <label>Role:</label>
             <select id="newManagerRole">
-         
-              <% if (role === 'master') { %>
+              <% if (role === 'secret' || role === 'master') { %>
               <option value="mover">mover</option>
               <option value="admin">admin</option>
+              <option value="master">master</option>
               <% } else if (role === 'admin') { %>
               <option value="mover">mover</option>
               <% } %>
