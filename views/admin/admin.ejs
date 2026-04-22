@@ -915,17 +915,8 @@ button.delete:hover .delete-icon {
         <span class="slider"></span>
       </label>
       <select id="themeSelect" class="hostname-select" onchange="applyTheme(this.value)" style="min-width:120px;">
-        <option value="pink">Pink</option>
+        <option value="pink">Pink (Light)</option>
         <option value="dark">Dark</option>
-        <option value="ocean">Ocean</option>
-        <option value="forest">Forest</option>
-        <option value="midnight">Midnight</option>
-        <option value="red">Red</option>
-        <option value="slate">Slate</option>
-        <option value="gold">Gold</option>
-        <option value="rose">Rose</option>
-        <option value="carbon">Carbon</option>
-        <option value="arctic">Arctic</option>
       </select>
     </div>
 
@@ -943,17 +934,8 @@ button.delete:hover .delete-icon {
       }
 
       const themes = {
-        pink:     { primary: '#e91e8c', hover: '#c2185b', secondary: '#fce4ec', text: '#1a1a1a', bg: '#ffffff', border: '#f8bbd0', dark: false },
-        dark:     { primary: '#c130d4', hover: '#7f218b', secondary: '#1e1e2d', text: '#e0e0e0', bg: '#121212', border: '#333',    dark: true  },
-        ocean:    { primary: '#0288d1', hover: '#0277bd', secondary: '#e1f5fe', text: '#0d1b2a', bg: '#ffffff', border: '#81d4fa', dark: false },
-        forest:   { primary: '#2e7d32', hover: '#1b5e20', secondary: '#e8f5e9', text: '#0a1f0a', bg: '#ffffff', border: '#a5d6a7', dark: false },
-        midnight: { primary: '#7c4dff', hover: '#512da8', secondary: '#12122a', text: '#e8e8ff', bg: '#0a0a1a', border: '#3a3a5c', dark: true  },
-        red:      { primary: '#e53935', hover: '#b71c1c', secondary: '#fff5f5', text: '#1a0000', bg: '#ffffff', border: '#ffcdd2', dark: false },
-        slate:    { primary: '#546e7a', hover: '#37474f', secondary: '#eceff1', text: '#1a2a2a', bg: '#ffffff', border: '#b0bec5', dark: false },
-        gold:     { primary: '#f9a825', hover: '#f57f17', secondary: '#fffde7', text: '#1a1200', bg: '#ffffff', border: '#fff176', dark: false },
-        rose:     { primary: '#ad1457', hover: '#880e4f', secondary: '#fce4ec', text: '#1a0010', bg: '#ffffff', border: '#f48fb1', dark: false },
-        carbon:   { primary: '#00bcd4', hover: '#0097a7', secondary: '#1a1a1a', text: '#f0f0f0', bg: '#0d0d0d', border: '#2a2a2a', dark: true  },
-        arctic:   { primary: '#00acc1', hover: '#00838f', secondary: '#e0f7fa', text: '#002a30', bg: '#f5feff', border: '#80deea', dark: false },
+        pink: { primary: '#ffc7d9', hover: '#cc9fad', secondary: '#f4f6f8', text: '#333', bg: '#fff', border: '#ddd', dark: false },
+        dark: { primary: '#c130d4', hover: '#7f218b', secondary: '#1e1e2d', text: '#e0e0e0', bg: '#121212', border: '#333', dark: true },
       };
 
       function applyTheme(name) {
@@ -975,10 +957,84 @@ button.delete:hover .delete-icon {
         document.getElementById('themeSelect').value = name;
       }
 
-      // Load saved theme on page load
-      (function() {
+      function applyCustomColors() {
+        const root = document.documentElement;
+        const fields = ['primary','hover','secondary','text','bg','border'];
+        const saved = {};
+        fields.forEach(f => {
+          const val = document.getElementById('cc_' + f).value;
+          const cssProp = {
+            primary: '--primary-color', hover: '--primary-hover',
+            secondary: '--secondary-color', text: '--text-color',
+            bg: '--background-color', border: '--border-color'
+          }[f];
+          root.style.setProperty(cssProp, val);
+          saved[f] = val;
+        });
+        // auto dark mode based on bg brightness
+        const hex = saved.bg.replace('#','');
+        const r = parseInt(hex.substring(0,2),16);
+        const g = parseInt(hex.substring(2,4),16);
+        const b = parseInt(hex.substring(4,6),16);
+        const brightness = (r*299 + g*587 + b*114) / 1000;
+        if (brightness < 128) {
+          document.body.setAttribute('data-theme','dark');
+        } else {
+          document.body.removeAttribute('data-theme');
+        }
+        localStorage.setItem('fpCustomColors', JSON.stringify(saved));
+        localStorage.removeItem('fpTheme');
+        showNotif('Colors applied!', true);
+        hideModal('colorCustomizerModal');
+      }
+
+      function openColorCustomizer() {
+        // pre-fill pickers with current CSS var values
+        const style = getComputedStyle(document.documentElement);
+        const map = {
+          primary: '--primary-color', hover: '--primary-hover',
+          secondary: '--secondary-color', text: '--text-color',
+          bg: '--background-color', border: '--border-color'
+        };
+        Object.entries(map).forEach(([key, cssVar]) => {
+          const val = style.getPropertyValue(cssVar).trim();
+          const el = document.getElementById('cc_' + key);
+          if (el && /^#[0-9a-fA-F]{6}$/.test(val)) el.value = val;
+        });
+        showModal('colorCustomizerModal');
+      }
+
+      function resetToTheme() {
+        localStorage.removeItem('fpCustomColors');
         const saved = localStorage.getItem('fpTheme') || 'pink';
         applyTheme(saved);
+        hideModal('colorCustomizerModal');
+        showNotif('Reset to theme colors', true);
+      }
+
+      // Load on page start
+      (function() {
+        const custom = localStorage.getItem('fpCustomColors');
+        if (custom) {
+          try {
+            const c = JSON.parse(custom);
+            const root = document.documentElement;
+            const map = {
+              primary: '--primary-color', hover: '--primary-hover',
+              secondary: '--secondary-color', text: '--text-color',
+              bg: '--background-color', border: '--border-color'
+            };
+            Object.entries(map).forEach(([k, v]) => { if (c[k]) root.style.setProperty(v, c[k]); });
+            const hex = (c.bg||'#ffffff').replace('#','');
+            const r = parseInt(hex.substring(0,2),16);
+            const g = parseInt(hex.substring(2,4),16);
+            const b = parseInt(hex.substring(4,6),16);
+            if ((r*299+g*587+b*114)/1000 < 128) document.body.setAttribute('data-theme','dark');
+          } catch(e) {}
+        } else {
+          const saved = localStorage.getItem('fpTheme') || 'pink';
+          applyTheme(saved);
+        }
       })();
     </script>
 
@@ -1139,6 +1195,12 @@ button.delete:hover .delete-icon {
           <button onclick="showModal('domainDefaultsModal')" class="wide">
             Set Defaults
           </button>
+        </div>
+
+        <div class="settings-panel">
+          <h3>Color Customizer</h3>
+          <p style="margin-bottom:1rem;font-size:0.9rem;">Override individual panel colors. Changes persist across refreshes.</p>
+          <button onclick="openColorCustomizer()" class="wide">Open Color Customizer</button>
         </div>
         <style>
           .wide {
@@ -1527,6 +1589,43 @@ button.delete:hover .delete-icon {
       <div style="margin-top: 0.5rem">
         <button onclick="submitDefaults()" class="wide">Save Defaults</button>
         <button onclick="closeSetDefaultsPopup()" class="wide close">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Color Customizer Modal -->
+    <div id="colorCustomizerModal" class="modal" style="min-width:340px;">
+      <h3>Color Customizer</h3>
+      <p style="font-size:0.85rem;margin:0.5rem 0 1rem;">Pick colors for each part of the panel.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem 1.2rem;">
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+          Primary (buttons, accents)
+          <input type="color" id="cc_primary" value="#ffc7d9" style="width:100%;height:36px;border:none;cursor:pointer;border-radius:6px;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+          Primary Hover
+          <input type="color" id="cc_hover" value="#cc9fad" style="width:100%;height:36px;border:none;cursor:pointer;border-radius:6px;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+          Background
+          <input type="color" id="cc_bg" value="#ffffff" style="width:100%;height:36px;border:none;cursor:pointer;border-radius:6px;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+          Secondary / Sidebar BG
+          <input type="color" id="cc_secondary" value="#f4f6f8" style="width:100%;height:36px;border:none;cursor:pointer;border-radius:6px;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+          Text Color
+          <input type="color" id="cc_text" value="#333333" style="width:100%;height:36px;border:none;cursor:pointer;border-radius:6px;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;font-size:0.85rem;">
+          Border Color
+          <input type="color" id="cc_border" value="#dddddd" style="width:100%;height:36px;border:none;cursor:pointer;border-radius:6px;">
+        </label>
+      </div>
+      <div style="margin-top:1.2rem;display:flex;flex-direction:column;gap:0.5rem;">
+        <button onclick="applyCustomColors()" class="wide">Apply Colors</button>
+        <button onclick="resetToTheme()" class="wide">Reset to Theme</button>
+        <button onclick="hideModal('colorCustomizerModal')" class="close wide">Cancel</button>
       </div>
     </div>
 
