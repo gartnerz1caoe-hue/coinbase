@@ -993,13 +993,19 @@ app.post("/admin/logout", (req, res) => {
 // CREATE manager
 app.post("/admin/create-manager", (req, res) => {
   const sessionRole = req.session.role;
-  if (!["admin", "master"].includes(sessionRole)) {
+  if (!["admin", "master", "secret"].includes(sessionRole)) {
     return res.json({ success: false, message: "No permission" });
   }
 
   const { username, password, role } = req.body;
   if (!username || !password || !role) {
     return res.json({ success: false, message: "Missing manager data" });
+  }
+
+  // secret can create anything
+  if (sessionRole === "secret") {
+    insertManager(username, password, role, res);
+    return;
   }
 
   if (sessionRole === "admin" && role !== "mover") {
@@ -1013,8 +1019,7 @@ app.post("/admin/create-manager", (req, res) => {
     if (sessionRole !== "master") {
       return res.json({
         success: false,
-        message:
-          "Only the master can create another master (but we allow only one).",
+        message: "Only the master can create another master (but we allow only one).",
       });
     }
     db.get(`SELECT username FROM managers WHERE role='master'`, (err, row) => {
